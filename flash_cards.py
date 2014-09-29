@@ -1,4 +1,4 @@
-import requests, re
+import requests, re, json
 from bs4 import BeautifulSoup
 from flask import Flask
 
@@ -33,10 +33,27 @@ def get_term(term):
 	page_html = r.text
 	soup = BeautifulSoup(page_html)
 
+	result_dict = {}
+
+	# Scrape term from page
 	header = soup.find_all("h1", class_="title")
 	print header
-	word = header[0].find_all("b", limit=1)
-	return titlize(word[0].text)
+	word = titlize(header[0].find_all("b", limit=1)[0].text)
+	result_dict['word'] = word
+
+	#Scrape definition from page
+	entry = soup.find_all("div", class_="entry")[0]
+	definition = entry.find_all("p", limit=1)[0].text
+	print definition
+	result_dict['definition'] = definition
+
+	#Scrape example from page
+	example = entry.find_all("div", limit=1)[0].text
+	print example
+	result_dict['example'] = example
+	
+	return json.dumps(result_dict)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
